@@ -1,0 +1,4 @@
+name: RespawnPlus
+version: '${version}'
+main: me.orange.respawnplus.RespawnPlus
+api-version: '1.20'
