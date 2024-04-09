@@ -7,12 +7,17 @@ import org.bukkit.GameMode;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,6 +32,7 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
     private final HashMap<UUID, PlayerDeathData> deadSpectators = new HashMap<>();
     private BukkitScheduler scheduler;
     private Respawncd respawncd;
+    private FileConfiguration configuration;
 
     @Override
     public void onEnable() {
@@ -34,6 +40,12 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         scheduler = getServer().getScheduler();
         respawncd = new Respawncd();
         getServer().getCommandMap().register(getName(), respawncd);
+        configuration = getConfig();
+
+        //config
+        if (!configuration.contains("deaths_scoreboard")) configuration.set("deaths_scoreboard", "deaths");
+        if (!configuration.contains("scoreboard_time")) configuration.set("scoreboard_time", 600L);
+        saveConfig();
     }
 
     @EventHandler
@@ -60,6 +72,14 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         }
 
         event.setCancelled(true);
+
+        Scoreboard mainScoreboard = getServer().getScoreboardManager().getMainScoreboard();
+        Objective objective = mainScoreboard.getObjective(configuration.getString("deaths_scoreboard", "deaths"));
+        if (objective == null) return;
+        Score scoreFor = objective.getScoreFor(player);
+        scoreFor.setScore(scoreFor.getScore() + 1);
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        scheduler.runTaskLater(this, () -> mainScoreboard.clearSlot(DisplaySlot.SIDEBAR), configuration.getLong("scoreboard_time", 600L));
     }
 
     private void respawn(UUID uniqueId) {
