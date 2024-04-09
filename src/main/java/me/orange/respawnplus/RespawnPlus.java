@@ -36,15 +36,18 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
+
         scheduler = getServer().getScheduler();
+
         respawncd = new Respawncd();
         getServer().getCommandMap().register(getName(), respawncd);
-        configuration = getConfig();
+
+        getServer().getCommandMap().register(getName(),
+                new CheckScoreboardCommand(this));
 
         //config
-        if (!configuration.contains("deaths_scoreboard")) configuration.set("deaths_scoreboard", "deaths");
-        if (!configuration.contains("scoreboard_time")) configuration.set("scoreboard_time", 600L);
-        saveConfig();
+        saveDefaultConfig();
+        configuration = getConfig();
     }
 
     @EventHandler
@@ -53,11 +56,7 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         Player killer = player.getKiller();
 
         if (killer == null) {
-            Scoreboard mainScoreboard = getServer().getScoreboardManager().getMainScoreboard();
-            Objective objective = mainScoreboard.getObjective(configuration.getString("deaths_scoreboard", "deaths"));
-            if (objective == null) return;
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-            scheduler.runTaskLater(this, () -> mainScoreboard.clearSlot(DisplaySlot.SIDEBAR), configuration.getLong("scoreboard_time", 600L));
+            showScoreboard();
             return;
         }
 
@@ -75,10 +74,21 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         int cdSecs = cd / 20;
         for (int i = 0; i < cdSecs; i++) {
             int currI = i;
-            scheduler.runTaskLater(this, () -> player.showTitle(title(Component.empty(), Component.text(cdSecs - currI).color(NamedTextColor.GRAY))), i * 20);
+            scheduler.runTaskLater(this,
+                    () -> player.showTitle(title(Component.empty(),
+                            Component.text(cdSecs - currI).color(NamedTextColor.GRAY))),
+                    i * 20);
         }
 
         event.setCancelled(true);
+    }
+
+    private void showScoreboard() {
+        Scoreboard mainScoreboard = getServer().getScoreboardManager().getMainScoreboard();
+        Objective objective = mainScoreboard.getObjective(configuration.getString("deaths_scoreboard", "deaths"));
+        if (objective == null) return;
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        scheduler.runTaskLater(this, () -> mainScoreboard.clearSlot(DisplaySlot.SIDEBAR), configuration.getLong("scoreboard_time", 600L));
     }
 
     private void respawn(UUID uniqueId) {

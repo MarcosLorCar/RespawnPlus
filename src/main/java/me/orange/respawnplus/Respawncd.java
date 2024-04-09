@@ -19,6 +19,7 @@ public class Respawncd extends Command {
                 "Change respawn timer in ticks",
                 "/respawncd <ticks>",
                 new ArrayList<>());
+        setPermission("respawnplus.respawncd");
     }
 
     @Override
