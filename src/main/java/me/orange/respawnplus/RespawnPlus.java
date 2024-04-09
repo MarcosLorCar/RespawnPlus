@@ -16,7 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.time.Duration;
@@ -52,7 +51,15 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
     public void playerDied(PlayerDeathEvent event) {
         Player player = event.getPlayer();
         Player killer = player.getKiller();
-        if (killer == null) return;
+
+        if (killer == null) {
+            Scoreboard mainScoreboard = getServer().getScoreboardManager().getMainScoreboard();
+            Objective objective = mainScoreboard.getObjective(configuration.getString("deaths_scoreboard", "deaths"));
+            if (objective == null) return;
+            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+            scheduler.runTaskLater(this, () -> mainScoreboard.clearSlot(DisplaySlot.SIDEBAR), configuration.getLong("scoreboard_time", 600L));
+            return;
+        }
 
         Component deathMessage = event.deathMessage();
         for (Player onlinePlayer : getServer().getOnlinePlayers()) {
@@ -72,14 +79,6 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         }
 
         event.setCancelled(true);
-
-        Scoreboard mainScoreboard = getServer().getScoreboardManager().getMainScoreboard();
-        Objective objective = mainScoreboard.getObjective(configuration.getString("deaths_scoreboard", "deaths"));
-        if (objective == null) return;
-        Score scoreFor = objective.getScoreFor(player);
-        scoreFor.setScore(scoreFor.getScore() + 1);
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        scheduler.runTaskLater(this, () -> mainScoreboard.clearSlot(DisplaySlot.SIDEBAR), configuration.getLong("scoreboard_time", 600L));
     }
 
     private void respawn(UUID uniqueId) {
