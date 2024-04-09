@@ -10,6 +10,7 @@ The SpectatorRespawn plugin allows players to spectate the player who killed the
 ## Commands
 
 - `/respawncd <time in ticks>` - Set the respawn cooldown time.
+- `/checkscoreboard` - Show the deaths scoreboard for a period of time.
 
 ## Config
 
