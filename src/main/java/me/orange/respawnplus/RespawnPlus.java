@@ -55,7 +55,7 @@ public final class RespawnPlus extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         Player killer = player.getKiller();
 
-        if (killer == null) {
+        if (killer == null || killer.getName().equals(player.getName())) {
             showScoreboard();
             return;
         }
