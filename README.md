@@ -1,6 +1,6 @@
-# SpectatorRespawn Plugin
+# RespawnPlus Plugin
 
-The SpectatorRespawn plugin allows players to spectate the player who killed them for a certain period before being able to respawn in place.
+The RespawnPlus plugin allows players to spectate the player who killed them for a certain period before being able to respawn in place.
 
 ## Features
 
